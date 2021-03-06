@@ -2,6 +2,9 @@ const express = require('express')
 const app = express()
 const path = require('path')
 const logger = require('./middleware/logger');
+const download = require('./middleware/download');
+
+app.use(download);
 app.use(logger);
 
 app.use(express.static(__dirname + '/public'))
