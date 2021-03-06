@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Terrain</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./css/menu.css">
+    <link rel="stylesheet" type="text/css" href="./css/label.css">
+
+    <style>
+        body {
+            height: 100%;
+            margin: 0px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #legends {
+            position: absolute;
+            /* let us position ourself inside the container */
+            left: 0;
+            /* make our position the top left of the container */
+            top: 0;
+            color: white;
+            pointer-events: none;
+        }
+
+        #legends>img {
+            position: absolute;
+            /* let us position them inside the container */
+            left: 0;
+            /* make their default position the top left of the container */
+            top: 5;
+            width: 150;
+            height: 400;
+            margin-top: 10;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <script src='resources/ploty.js'></script>
+    <script type="module" src='menu.js'></script>
+    <script type='module' src="new_terrain.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <canvas id="canvas"></canvas>
+        <div id="labels"></div>
+        <div id="legends"></div>
+        <div id="plotly_panel"></div>
+        <div class="dropdown">
+            <button class="dropbtn">Dropdown</button>
+            <div id="myDropdown" class="dropdown-content">
+                <a id="showData">Source Data</a>
+                <a id="showModel">3D Model</a>
+                <a id='showTrace'>Date Trace</a>
+                <a id="histogram">Histogram</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

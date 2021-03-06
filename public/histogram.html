@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Terrain</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./css/menu.css">
+    <link rel="stylesheet" type="text/css" href="./css/plotly_panel.css">
+
+    <style>
+        body {
+            height: 100%;
+            margin: 0px;
+        }
+    </style>
+
+    <script src='resources/ploty.js'></script>
+    <script type="module" src="histogram_menu.js"></script>
+    <!-- <script type="module" src="plotlyTest.js"></script> -->
+</head>
+
+<body>
+    <div id="container">
+        <div id="legends"></div>
+        <div id="plotly_panel"></div>
+        <div class="dropdown">
+            <button class="dropbtn">Dropdown</button>
+            <div id="myDropdown" class="dropdown-content">
+                <a id="chlorophyll">Chlorophyll</a>
+                <a id="conductivity">Conductivity</a>
+                <a id='salinity'>Salinity</a>
+                <a id="temperature">Temperature</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
