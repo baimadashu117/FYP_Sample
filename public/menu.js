@@ -31,8 +31,7 @@ fn((data, html) => {
 
     function showData() {
         console.log(data);
-        var myWindow = window.open("", "_blank");
-        myWindow.document.write(html);
+        var myWindow = window.open("resources/iframe/table.html", "_blank");
     }
 
     let showModelBtn = document.querySelector('#showModel');
