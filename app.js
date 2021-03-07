@@ -13,7 +13,9 @@ app.use('/jsm/', express.static(path.join(__dirname, 'node_modules/three/example
 app.use('/jquery',express.static(path.join(__dirname, 'node_modules/jquery')))
 app.use('/jquery-csv',express.static(path.join(__dirname, 'node_modules/jquery-csv')));
 
-app.listen(3000, function () { 
-  console.log('Visit http://127.0.0.1:3000') 
+
+const PORT = process.env.PORT || 5000
+app.listen(PORT, function () { 
+  console.log('Visit http://127.0.0.1:5000') 
   }
 );
