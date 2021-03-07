@@ -31,7 +31,7 @@ fn((data, html) => {
     showDataBtn.onclick = function () { showData() };
 
     function showData() {
-        // console.log(data);
+        console.log(data);
         var myWindow = window.open("resources/iframe/table.html", "_blank");
         if (window.confirm("Press a button!")) {
         $.ajax({
