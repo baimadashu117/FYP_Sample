@@ -33,20 +33,20 @@ fn((data, html) => {
     function showData() {
         console.log(data);
         var myWindow = window.open("resources/iframe/table.html", "_blank");
-        if (window.confirm("Press a button!")) {
-        $.ajax({
-            type: "GET",
-            url: "/download",
-            contentType:"text/csv",
-            success: function(data) {
-                var blob=new Blob([data]);
-                var link=document.createElement('a');
-                link.href=window.URL.createObjectURL(blob);
-                link.download="xyz_data.csv";
-                link.click();
-              }
-        });
-        } 
+        if (window.confirm("Download source CSV?")) {
+            $.ajax({
+                type: "GET",
+                url: "/download",
+                contentType: "text/csv",
+                success: function (data) {
+                    var blob = new Blob([data]);
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "xyz_data.csv";
+                    link.click();
+                }
+            });
+        }
     }
 
     let showModelBtn = document.querySelector('#showModel');

@@ -10,15 +10,17 @@ import { RoughnessMipmapper } from './jsm/utils/RoughnessMipmapper.js';
 let group, camera, scene, canvas, renderer;
 let intersected;
 // mesh object
-let depth, temp, chlro;
+let depth, temp, chlro, salinity;
+// legend
 let legend;
+// hover label
 let labelEle;
 let labelV = new THREE.Vector3();
 // vertices
-let depth_vertices, temp_vertices, chlro_vertices;
+let depth_vertices, temp_vertices, chlro_vertices, salinity_vertices;
 var meshes = [];
 // attributes
-let depth_attribute, temp_attribute, chlro_attribute;
+let depth_attribute, temp_attribute, chlro_attribute, salinity_attribute;
 
 const raycaster = new THREE.Raycaster();
 // raycaster.params.Points.threshold = 1.0;
@@ -27,7 +29,8 @@ const mouse = new THREE.Vector2(1, 1);
 const params = {
     depth: true,
     temp: false,
-    chlro: false
+    chlro: false,
+    salinity: false
 };
 
 init();
@@ -53,11 +56,14 @@ function init() {
         depth.visible = true;
         temp.visible = false;
         chlro.visible = false;
+        salinity.visible = false;
         depth_vertices.visible = true;
         temp_vertices.visible = false;
         chlro_vertices.visible = false;
+        salinity_vertices.visible = false;
         params.temp = false;
         params.chlro = false;
+        params.salinity = false;
         legend.src = 'resources/legend/depth_legend.png';
     });
     let temp_con = folder1.add(params, 'temp')
@@ -66,11 +72,14 @@ function init() {
         temp.visible = true;
         depth.visible = false;
         chlro.visible = false;
+        salinity.visible = false;
         temp_vertices.visible = true;
         depth_vertices.visible = false;
         chlro_vertices.visible = false;
+        salinity_vertices.visible = false;
         params.depth = false;
         params.chlro = false;
+        params.salinity = false;
         legend.src = 'resources/legend/temp_legend.png';
     });
     let chlro_con = folder1.add(params, 'chlro')
@@ -79,13 +88,31 @@ function init() {
         chlro.visible = true;
         depth.visible = false;
         temp.visible = false;
+        salinity.visible = false;
         depth_vertices.visible = false;
         temp_vertices.visible = false;
         chlro_vertices.visible = true;
+        salinity_vertices.visible = false;
         params.depth = false;
         params.temp = false;
+        params.salinity = false;
         legend.src = 'resources/legend/chlro_legend.png';
     });
+    let salinity_con = folder1.add(params, 'salinity');
+    salinity_con.listen();
+    salinity_con.onChange(function () {
+        salinity.visible = true;
+        depth.visible = false;
+        temp.visible = false;
+        chlro.visible = false;
+        depth_vertices.visible = false;
+        temp_vertices.visible = false;
+        chlro_vertices.visible = false;
+        params.depth = false;
+        params.temp = false;
+        params.chlro = false;
+        legend.src = 'resources/legend/salinity_legend.png';
+    })
     folder1.open();
     gui.open();
 
@@ -159,15 +186,21 @@ function init() {
                     console.log(root);
                     console.log(dumpObject(root).join('\n'));
                     group.add(root);
-                    temp = root.getObjectByName('temp_kriging');
                     depth = root.getObjectByName('depth_TIN');
+                    temp = root.getObjectByName('temp_kriging');
+                    temp.position.copy(depth.position);
                     chlro = root.getObjectByName('chlro_kriging');
+                    chlro.position.copy(depth.position);
+                    salinity = root.getObjectByName('salinity_kriging');
+                    salinity.position.copy(depth.position);
                     temp.visible = false;
                     chlro.visible = false;
+                    salinity.visible = false;
                     depth.scale.set(1, 1, 1);
                     getVertices(temp);
                     getVertices(depth);
                     getVertices(chlro);
+                    getVertices(salinity);
                     // depth_vertices.visible = false;
                     temp_vertices.visible = false;
                     chlro_vertices.visible = false;
@@ -205,10 +238,10 @@ function animate() {
     raycaster.setFromCamera(mouse, camera);
     if (depth_vertices) {
         if (params.depth == true) {
-            // console.log("depth");
             const intersect = raycaster.intersectObject(depth_vertices);
             // console.log(intersect);
             if (intersect.length > 0) {
+                labelEle.style.display = '';
                 if (intersected != intersect[0].index) {
                     intersected = intersect[0].index;
                     // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
@@ -222,12 +255,14 @@ function animate() {
                 } else if (intersected !== null) {
                     intersected = null;
                 }
+            } else {
+                labelEle.style.display = 'None';
             }
         } else if (params.temp == true) {
-            // console.log("temp");
             const intersect = raycaster.intersectObject(temp_vertices);
             // console.log(intersect);
             if (intersect.length > 0) {
+                labelEle.style.display = '';
                 if (intersected != intersect[0].index) {
                     intersected = intersect[0].index;
                     // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
@@ -241,12 +276,14 @@ function animate() {
                 } else if (intersected !== null) {
                     intersected = null;
                 }
+            } else {
+                labelEle.style.display = 'None';
             }
         } else if (params.chlro == true) {
-            // console.log("chlro");
             const intersect = raycaster.intersectObject(chlro_vertices);
             // console.log(intersect);
             if (intersect.length > 0) {
+                labelEle.style.display = '';
                 if (intersected != intersect[0].index) {
                     intersected = intersect[0].index;
                     // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
@@ -260,6 +297,29 @@ function animate() {
                 } else if (intersected !== null) {
                     intersected = null;
                 }
+            } else {
+                labelEle.style.display = 'None';
+            }
+        } else if (params.salinity == true) {
+            const intersect = raycaster.intersectObject(salinity_vertices);
+            // console.log(intersect);
+            if (intersect.length > 0) {
+                labelEle.style.display = '';
+                if (intersected != intersect[0].index) {
+                    intersected = intersect[0].index;
+                    // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
+                    // console.log(intersect[0].index);
+                    labelV = intersect[0].point;
+                    labelV.project(camera);
+                    labelEle.textContent = 'Salnity: ' + salinity_attribute.position.array[3 * intersected + 1];
+                    const x = (labelV.x * .5 + .5) * canvas.clientWidth;
+                    const y = (labelV.y * -.5 + .5) * canvas.clientHeight;
+                    labelEle.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+                } else if (intersected !== null) {
+                    intersected = null;
+                }
+            } else {
+                labelEle.style.display = 'None';
             }
         }
     }
@@ -271,6 +331,7 @@ function render() {
 }
 
 function getVertices(mesh) {
+    mesh.scale.set(1, 0.0001, 1);
     const tempGeom = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
     const vertices = tempGeom.vertices;
     if (vertices) {
@@ -286,7 +347,7 @@ function getVertices(mesh) {
             alphaTest: 0.5,
             // side: THREE.DoubleSide
         });
-        console.log(pointsMaterial);
+        // console.log(pointsMaterial);
         switch (mesh.name) {
             case 'depth_TIN':
                 depth_attribute = geometry.attributes;
@@ -312,23 +373,15 @@ function getVertices(mesh) {
                 chlro_vertices.scale.set(1, 0.0001, 1);
                 group.add(chlro_vertices);
                 break;
+            case 'salinity_kriging':
+                salinity_attribute = geometry.attributes;
+                salinity_vertices = new THREE.Points(geometry, pointsMaterial);
+                salinity_vertices.name = 'chlro.vertices';
+                salinity_vertices.position.copy(salinity.position);
+                salinity_vertices.scale.set(1, 0.0001, 1);
+                group.add(salinity_vertices);
+                break;
         }
     }
 }
 
-function plotly(){
-    // var trace1 = {
-    //     x:['2020-10-04', '2021-11-04', '2023-12-04'],
-    //     y: [90, 40, 60],
-    //     type: 'scatter'
-    // };
-    
-    // var data = [trace1];
-    
-    // var layout = {
-    //     title: 'Scroll and Zoom',
-    //     showlegend: false
-    // };
-    
-    // Plotly.newPlot('plotlyPanel', data, layout, {scrollZoom: true});
-}

@@ -9,10 +9,11 @@ let plot = (callback) => {
 
   fn((data, html) => {
     a = data;
-    for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data[0].length; i++) {
       indexMap[data[0][i]] = i;
     }
-    // console.log(data);
+    console.log(data);
+    console.log(indexMap);
     callback(draw);
   })
 
@@ -20,8 +21,8 @@ let plot = (callback) => {
     console.log(indexMap);
     console.log(category);
     var temp = []
-    for (var i = 0; i < a.length - 1; i++) {
-      temp[i] = a[i + 1][indexMap[category]];
+    for (var i = 1; i < a.length - 1; i++) {
+      temp[i] = a[i][indexMap[category]];
     }
     console.log(temp);
     var trace = {
