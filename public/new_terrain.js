@@ -7,30 +7,38 @@ import { RoughnessMipmapper } from './jsm/utils/RoughnessMipmapper.js';
 
 
 // scene objects
-let group, camera, scene, canvas, renderer;
+let camera, scene, canvas, renderer;
 let intersected;
-// mesh object
-let depth, temp, chlro, salinity;
+// mesh
+let depth, temp, chlro, salinity, turbidity;
+var mesh_group = [];
 // legend
 let legend;
 // hover label
 let labelEle;
 let labelV = new THREE.Vector3();
 // vertices
-let depth_vertices, temp_vertices, chlro_vertices, salinity_vertices;
-var meshes = [];
+let depth_vertices, temp_vertices, chlro_vertices, salinity_vertices, turbidity_vertices;
+let vertice_group = [];
 // attributes
-let depth_attribute, temp_attribute, chlro_attribute, salinity_attribute;
+let depth_attribute, temp_attribute, chlro_attribute, salinity_attribute, turbidity_attribute;
+let attribute_group = [];
+// mesh object
+let depthOBJ = { mesh: null, vertices: null, attribute: null };
 
+//  raycaster for mouse hovering effect
 const raycaster = new THREE.Raycaster();
 // raycaster.params.Points.threshold = 1.0;
 const mouse = new THREE.Vector2(1, 1);
 
+
+// GUI parameters
 const params = {
     depth: true,
     temp: false,
     chlro: false,
-    salinity: false
+    salinity: false,
+    turbidity: false
 };
 
 init();
@@ -47,74 +55,7 @@ function init() {
     renderer.toneMappingExposure = 0.8;
     renderer.outputEncoding = THREE.sRGBEncoding;
 
-    //gui
-    const gui = new GUI();
-    var folder1 = gui.addFolder('Change Surface');
-    let depth_con = folder1.add(params, 'depth');
-    depth_con.listen();
-    depth_con.onChange(function () {
-        depth.visible = true;
-        temp.visible = false;
-        chlro.visible = false;
-        salinity.visible = false;
-        depth_vertices.visible = true;
-        temp_vertices.visible = false;
-        chlro_vertices.visible = false;
-        salinity_vertices.visible = false;
-        params.temp = false;
-        params.chlro = false;
-        params.salinity = false;
-        legend.src = 'resources/legend/depth_legend.png';
-    });
-    let temp_con = folder1.add(params, 'temp')
-    temp_con.listen();
-    temp_con.onChange(function () {
-        temp.visible = true;
-        depth.visible = false;
-        chlro.visible = false;
-        salinity.visible = false;
-        temp_vertices.visible = true;
-        depth_vertices.visible = false;
-        chlro_vertices.visible = false;
-        salinity_vertices.visible = false;
-        params.depth = false;
-        params.chlro = false;
-        params.salinity = false;
-        legend.src = 'resources/legend/temp_legend.png';
-    });
-    let chlro_con = folder1.add(params, 'chlro')
-    chlro_con.listen();
-    chlro_con.onChange(function () {
-        chlro.visible = true;
-        depth.visible = false;
-        temp.visible = false;
-        salinity.visible = false;
-        depth_vertices.visible = false;
-        temp_vertices.visible = false;
-        chlro_vertices.visible = true;
-        salinity_vertices.visible = false;
-        params.depth = false;
-        params.temp = false;
-        params.salinity = false;
-        legend.src = 'resources/legend/chlro_legend.png';
-    });
-    let salinity_con = folder1.add(params, 'salinity');
-    salinity_con.listen();
-    salinity_con.onChange(function () {
-        salinity.visible = true;
-        depth.visible = false;
-        temp.visible = false;
-        chlro.visible = false;
-        depth_vertices.visible = false;
-        temp_vertices.visible = false;
-        chlro_vertices.visible = false;
-        params.depth = false;
-        params.temp = false;
-        params.chlro = false;
-        legend.src = 'resources/legend/salinity_legend.png';
-    })
-    folder1.open();
-    gui.open();
+    initGUI();
 
     //create legend
     const legendsContenter = document.querySelector('#legends');
@@ -144,13 +85,13 @@ function init() {
     // helper
     scene.add(new THREE.AxesHelper(20));
 
-    group = new THREE.Group();
-    scene.add(group);
+    vertice_group = new THREE.Group();
+    // scene.add(vertice_group);
 
     function dumpObject(obj, lines = [], isLast = true, prefix = '') {
         const localPrefix = isLast ? '└─' : '├─';
         if (obj.type == 'Mesh') {
-            meshes.push(obj);
+            mesh_group.push(obj);
         }
         lines.push(`${prefix}${prefix ? localPrefix : ''}${obj.name || '*no-name*'} [${obj.type}]`);
         const newPrefix = prefix + (isLast ? '  ' : '│ ');
@@ -180,30 +121,38 @@ function init() {
 
             //load model
             const loader = new GLTFLoader()
-            loader.load('resources/new_terrain.gltf',
+            loader.load('resources/model/new_terrain.gltf',
                 function (gltf) {
                     const root = gltf.scene;
                     console.log(root);
                     console.log(dumpObject(root).join('\n'));
-                    group.add(root);
+                    scene.add(root);
+                    // depth mesh
                     depth = root.getObjectByName('depth_TIN');
+                    depth.scale.set(1, 1, 1);
+                    // temperature mesh
                     temp = root.getObjectByName('temp_kriging');
                     temp.position.copy(depth.position);
+                    temp.visible = false;
+                    // chlorophyll mesh
                     chlro = root.getObjectByName('chlro_kriging');
                     chlro.position.copy(depth.position);
+                    chlro.visible = false;
+                    // salinity mesh
                     salinity = root.getObjectByName('salinity_kriging');
                     salinity.position.copy(depth.position);
-                    temp.visible = false;
-                    chlro.visible = false;
                     salinity.visible = false;
-                    depth.scale.set(1, 1, 1);
-                    getVertices(temp);
-                    getVertices(depth);
-                    getVertices(chlro);
-                    getVertices(salinity);
-                    // depth_vertices.visible = false;
-                    temp_vertices.visible = false;
-                    chlro_vertices.visible = false;
+                    // turbidity
+                    turbidity = root.getObjectByName('turbidity_kriging');
+                    turbidity.position.copy(depth.position);
+                    turbidity.visible = false;
+
+
+                    for (var i = 0; i < mesh_group.length; i++) {
+                        console.log(mesh_group[i]);
+                        getVertices(mesh_group[i]);
+                    }
+
                 },
                 // called while loading is progressing
                 function (xhr) {
@@ -321,6 +270,27 @@ function animate() {
             } else {
                 labelEle.style.display = 'None';
             }
+        } else if (params.turbidity == true) {
+            const intersect = raycaster.intersectObject(turbidity_vertices);
+            // console.log(intersect);
+            if (intersect.length > 0) {
+                labelEle.style.display = '';
+                if (intersected != intersect[0].index) {
+                    intersected = intersect[0].index;
+                    // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
+                    // console.log(intersect[0].index);
+                    labelV = intersect[0].point;
+                    labelV.project(camera);
+                    labelEle.textContent = 'Turbidity: ' + turbidity_attribute.position.array[3 * intersected + 1];
+                    const x = (labelV.x * .5 + .5) * canvas.clientWidth;
+                    const y = (labelV.y * -.5 + .5) * canvas.clientHeight;
+                    labelEle.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+                } else if (intersected !== null) {
+                    intersected = null;
+                }
+            } else {
+                labelEle.style.display = 'None';
+            }
         }
     }
     render();
@@ -355,7 +325,7 @@ function getVertices(mesh) {
                 depth_vertices.name = 'depth_vertices';
                 depth_vertices.position.copy(depth.position);
                 depth_vertices.scale.set(1, 0.0001, 1);
-                group.add(depth_vertices);
+                vertice_group.add(depth_vertices);
                 break;
             case 'temp_kriging':
                 temp_attribute = geometry.attributes;
@@ -363,7 +333,7 @@ function getVertices(mesh) {
                 temp_vertices.name = 'temp_vertices';
                 temp_vertices.position.copy(temp.position);
                 temp_vertices.scale.set(1, 0.0001, 1);
-                group.add(temp_vertices);
+                vertice_group.add(temp_vertices);
                 break;
             case 'chlro_kriging':
                 chlro_attribute = geometry.attributes;
@@ -371,7 +341,7 @@ function getVertices(mesh) {
                 chlro_vertices.name = 'chlro.vertices';
                 chlro_vertices.position.copy(chlro.position);
                 chlro_vertices.scale.set(1, 0.0001, 1);
-                group.add(chlro_vertices);
+                vertice_group.add(chlro_vertices);
                 break;
             case 'salinity_kriging':
                 salinity_attribute = geometry.attributes;
@@ -379,9 +349,92 @@ function getVertices(mesh) {
                 salinity_vertices.name = 'chlro.vertices';
                 salinity_vertices.position.copy(salinity.position);
                 salinity_vertices.scale.set(1, 0.0001, 1);
-                group.add(salinity_vertices);
+                vertice_group.add(salinity_vertices);
+                break;
+            case 'turbidity_kriging':
+                turbidity_attribute = geometry.attributes;
+                turbidity_vertices = new THREE.Points(geometry, pointsMaterial);
+                turbidity_vertices.name = 'turbidity.vertices';
+                turbidity_vertices.position.copy(turbidity.position);
+                turbidity_vertices.scale.set(1, 0.0001, 1);
+                vertice_group.add(turbidity_vertices);
                 break;
         }
     }
 }
+
+function initGUI() {
+    //gui
+    const gui = new GUI();
+    var folder1 = gui.addFolder('Change Surface');
+    let depth_con = folder1.add(params, 'depth');
+    depth_con.listen();
+    depth_con.onChange(function () {
+        helper("depth_TIN");
+        // params.temp = false;
+        // params.chlro = false;
+        // params.salinity = false;
+        legend.src = 'resources/legend/depth_legend.png';
+    });
+    let temp_con = folder1.add(params, 'temp')
+    temp_con.listen();
+    temp_con.onChange(function () {
+        helper("temp_kriging");
+        params.depth = false;
+        params.chlro = false;
+        params.salinity = false;
+        params.turbidity = false;
+        legend.src = 'resources/legend/temp_legend.png';
+    });
+    let chlro_con = folder1.add(params, 'chlro')
+    chlro_con.listen();
+    chlro_con.onChange(function () {
+        helper("chlro_kriging");
+        params.depth = false;
+        params.temp = false;
+        params.salinity = false;
+        params.turbidity = false;
+        legend.src = 'resources/legend/chlro_legend.png';
+    });
+    let salinity_con = folder1.add(params, 'salinity');
+    salinity_con.listen();
+    salinity_con.onChange(function () {
+        helper("salinity_kriging");
+        params.depth = false;
+        params.temp = false;
+        params.chlro = false;
+        params.turbidity = false;
+        legend.src = 'resources/legend/salinity_legend.png';
+    })
+    let turbidity_con = folder1.add(params, 'turbidity');
+    turbidity_con.listen();
+    turbidity_con.onChange(function () {
+        helper("turbidity_kriging");
+        params.depth = false;
+        params.temp = false;
+        params.chlro = false;
+        params.salinity = false;
+        legend.src = 'resources/legend/turbidity_legend.png';
+    })
+
+    // var keys = Object.keys(params);
+    // console.log(keys);
+    // for (var i = 0; i < keys.length; i++) {
+    //     console.log(keys[i] + ": " + typeof keys[i]);
+    // }
+
+    function helper(name) {
+        for (var i in mesh_group) {
+            if (mesh_group[i].name == name) {
+                mesh_group[i].visible = true;
+            } else {
+                mesh_group[i].visible = false;
+            }
+        }
+    }
+
+    folder1.open();
+    gui.open();
+}
+
 
