@@ -1,7 +1,6 @@
 import * as jQuery from '../jquery/dist/jquery.js';
 import * as csv from '../jquery-csv/src/jquery.csv.js';
 
-// $('#message').text('Hi from jQuery!');
 let data;
 let html;
 

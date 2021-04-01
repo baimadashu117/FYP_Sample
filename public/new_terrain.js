@@ -23,8 +23,6 @@ let vertice_group = [];
 // attributes
 let depth_attribute, temp_attribute, chlro_attribute, salinity_attribute, turbidity_attribute;
 let attribute_group = [];
-// mesh object
-let depthOBJ = { mesh: null, vertices: null, attribute: null };
 
 //  raycaster for mouse hovering effect
 const raycaster = new THREE.Raycaster();
@@ -79,6 +77,8 @@ function init() {
     camera.position.set(100, 100, 100);
     scene.add(camera);
 
+    console.log(camera);
+
     // controls
     const controls = new OrbitControls(camera, renderer.domElement);
 
@@ -129,7 +129,7 @@ function init() {
                     scene.add(root);
                     // depth mesh
                     depth = root.getObjectByName('depth_TIN');
-                    depth.scale.set(1, 1, 1);
+                    //depth.scale.set(1, 1, 1);
                     // temperature mesh
                     temp = root.getObjectByName('temp_kriging');
                     temp.position.copy(depth.position);
@@ -174,6 +174,7 @@ function init() {
 function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    console.log(mouse);
 }
 
 function onWindowResize() {
@@ -185,6 +186,8 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
     raycaster.setFromCamera(mouse, camera);
+    // console.log(raycaster.ray.direction);
+    // console.log(raycaster.ray.origin);
     if (depth_vertices) {
         if (params.depth == true) {
             const intersect = raycaster.intersectObject(depth_vertices);
@@ -200,6 +203,7 @@ function animate() {
                     labelEle.textContent = 'Depth: ' + depth_attribute.position.array[3 * intersected + 1];
                     const x = (labelV.x * .5 + .5) * canvas.clientWidth;
                     const y = (labelV.y * -.5 + .5) * canvas.clientHeight;
+                    // console.log(x,y);
                     labelEle.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
                 } else if (intersected !== null) {
                     intersected = null;
@@ -302,22 +306,29 @@ function render() {
 
 function getVertices(mesh) {
     mesh.scale.set(1, 0.0001, 1);
-    const tempGeom = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
-    const vertices = tempGeom.vertices;
-    if (vertices) {
-        let geometry = new THREE.BufferGeometry().setFromPoints(vertices);
-        // let attributes = geometry.attributes;
-        // console.log(attributes);
+    // const tempGeom = new THREE.Geometry().fromBufferGeometry(mesh.geometry); !!! Geometry() no longer supported in V126
+    // const vertices = tempGeom.vertices;
+    const vertices = mesh.geometry.attributes.position.array;
+    // console.log(vertices);
+    let points = [];
+    for (var i = 1; i < vertices.length / 3; i++) {
+        points.push(new THREE.Vector3().fromArray(vertices, i * 3));
+    }
+    console.log(mesh.name);
+    console.log(points);
+    if (points) {
+        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        let attributes = geometry.attributes;
+        console.log(attributes);
         const loader = new THREE.TextureLoader();
         const texture = loader.load('resources/disc.png');
         const pointsMaterial = new THREE.PointsMaterial({
             color: 0x0080ff,
             map: texture,
-            size: 0.0,
+            size: 5.0,
             alphaTest: 0.5,
             // side: THREE.DoubleSide
         });
-        // console.log(pointsMaterial);
         switch (mesh.name) {
             case 'depth_TIN':
                 depth_attribute = geometry.attributes;
@@ -363,17 +374,17 @@ function getVertices(mesh) {
     }
 }
 
+//gui
 function initGUI() {
-    //gui
     const gui = new GUI();
     var folder1 = gui.addFolder('Change Surface');
     let depth_con = folder1.add(params, 'depth');
     depth_con.listen();
     depth_con.onChange(function () {
         helper("depth_TIN");
-        // params.temp = false;
-        // params.chlro = false;
-        // params.salinity = false;
+        params.temp = false;
+        params.chlro = false;
+        params.salinity = false;
         legend.src = 'resources/legend/depth_legend.png';
     });
     let temp_con = folder1.add(params, 'temp')
@@ -416,12 +427,6 @@ function initGUI() {
         params.salinity = false;
         legend.src = 'resources/legend/turbidity_legend.png';
     })
-
-    // var keys = Object.keys(params);
-    // console.log(keys);
-    // for (var i = 0; i < keys.length; i++) {
-    //     console.log(keys[i] + ": " + typeof keys[i]);
-    // }
 
     function helper(name) {
         for (var i in mesh_group) {
