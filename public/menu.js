@@ -2,7 +2,7 @@ import { fn } from './csvTest.js';
 import * as jQuery from '../jquery/dist/jquery.js';
 
 fn((data, html) => {
-    console.log(data);
+    //console.log(data);
 
     /* When the user clicks on the button, 
     toggle between hiding and showing the dropdown content */
@@ -32,7 +32,6 @@ fn((data, html) => {
 
     function showData() {
         console.log(data);
-        var myWindow = window.open("resources/iframe/table.html", "_blank");
         if (window.confirm("Download source CSV?")) {
             $.ajax({
                 type: "GET",
@@ -47,6 +46,7 @@ fn((data, html) => {
                 }
             });
         }
+        var myWindow = window.open("resources/iframe/table.html", "_blank");
     }
 
     let showModelBtn = document.querySelector('#showModel');
