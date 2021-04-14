@@ -18,6 +18,7 @@ app.use('/threebox-plugin',express.static(path.join(__dirname,'node_modules/thre
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, function () { 
+  console.log(__dirname);
   console.log('Visit http://127.0.0.1:5000') 
   }
 );

@@ -23,6 +23,13 @@ plot((draw) => {
         }
     }
 
+    let depth = document.querySelector('#depth');
+    depth.onclick = function () { showDepth() };
+
+    function showDepth() {
+        draw('depth');
+    }
+
     let chlorophyll = document.querySelector('#chlorophyll');
     chlorophyll.onclick = function () { showChlorophyll() };
 

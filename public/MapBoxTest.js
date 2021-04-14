@@ -73,18 +73,34 @@ legend.alt = 'Depth Legend';
 legend.width = 150;
 legend.height = 400;
 legendsContenter.appendChild(legend);
-console.log(legend);
+
+const measureContainer = document.querySelector('#calculation-box');
+measureContainer.style.display = "None";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYmFpbWFkYXNodTExNyIsImEiOiJja2xicDR3Mm8wOXRwMndteDc4dzIybGxyIn0.-wDxVmn7xT2IW5wQJID79g';
-var map = (window.map = new mapboxgl.Map({
-    container: 'container',
-    // style: 'mapbox://styles/mapbox/light-v10',
-    style: 'mapbox://styles/mapbox/streets-v11',
-    zoom: 16,
-    center: origin,
-    pitch: 60,
-    antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
-}));
+if (!mapboxgl.supported()) {
+    alert("Your browser does not support Mapbox GL");
+} else {
+    var map = (window.map = new mapboxgl.Map({
+        container: 'container',
+        // style: 'mapbox://styles/mapbox/light-v10',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        zoom: 16,
+        center: origin,
+        pitch: 60,
+        antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
+    }));
+    // add draw control
+    var draw = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+            line_string: true,
+            polygon: true,
+            trash: true
+        }
+    });
+    map.addControl(draw, "bottom-right");
+}
 
 // parameters to ensure the model is georeferenced correctly on the map
 // configuration of the custom layer for a 3D model per the CustomLayerInterface
@@ -186,7 +202,7 @@ class CustomLayer {
 
             // console.log(this.camera.projectionMatrix);
 
-            const camInverseProjection = new THREE.Matrix4().getInverse(this.camera.projectionMatrix);
+            const camInverseProjection = new THREE.Matrix4().copy(this.camera.projectionMatrix).invert();
 
             // console.log(cameraPosition);
 
@@ -197,7 +213,7 @@ class CustomLayer {
             this.raycaster.set(cameraPosition, viewDirection);
             for (var i in aparams) {
                 if (aparams[i][i] == true) {
-                    console.log("raycasting " + aparams[i].mesh.name);
+                    // console.log("raycasting " + aparams[i].mesh.name);
                     const intersect = this.raycaster.intersectObject(aparams[i].mesh_vertices);
                     // console.log(intersect);
                     if (intersect.length > 0) {
@@ -238,57 +254,41 @@ class CustomLayer {
 let customLayer = new CustomLayer('customLayer');
 
 map.on('load', function () {
-    // add geojson source
-    map.addSource('geojson', {
-        type: 'geojson',
-        data: {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            120.68749666213988,
-                            31.30193001857122
-                        ]
-                    }
-                }
-            ]
-        }
-    })
-    // load and add image source
-    map.loadImage('resources/custom_marker.png', function (error, image) {
-        if (error) {
-            throw error;
-        }
-        map.addImage('icon', image);
-    })
-    // add icon image layer
-    map.addLayer({
-        id: 'icon image layer',
-        type: 'symbol',
-        source: 'geojson',
-        'layout': {
-            'icon-image': 'icon',
-            // get the title name from the source's "title" property
-            'text-field': ['get', 'title'],
-            'text-font': [
-                'Open Sans Semibold',
-                'Arial Unicode MS Bold'
-            ],
-            'text-offset': [0, 1.25],
-            'text-anchor': 'top'
-        }
-    })
-    // add custom 3D layer
-    map.addLayer(customLayer, 'icon image layer');
+    // add full screen control
+    // map.addControl(new mapboxgl.FullscreenControl(),"bottom-right");
+
+    // add custom 3D layer benethe the draw layer
+    map.addLayer(customLayer, 'gl-draw-polygon-fill-inactive.cold')
 });
 
 map.on('mousemove', function (e) {
     customLayer.raycastPoint(e.point);
 });
+
+map.on("draw.selectionchange", function (e) {
+    var selectFeatures = e.features;
+    if (selectFeatures.length == 0) {
+        measureContainer.style.display = 'None';
+    }
+    for (var i = 0; i < selectFeatures.length; i++) {
+        if (selectFeatures.length == 1) {
+            console.log(feature);
+            measureContainer.style.display = '';
+            var measureTest = measureContainer.querySelector("#calculated-area");
+            var feature = selectFeatures[0];
+            if (feature.geometry.type == 'LineString') {
+                var length = turf.length(feature);
+                draw.setFeatureProperty(feature.id, "length", length);
+                measureTest.innerHTML = "Length = " + length + " kilometers";
+            } else if (feature.geometry.type == 'Polygon') {
+                var area = turf.area(feature);
+                draw.setFeatureProperty(feature.id, "area", length);
+                measureTest.innerHTML = "Area = " + area + " square meters";
+            }
+        }
+    }
+})
+
 
 function dumpObject(obj, lines = [], isLast = true, prefix = '') {
     const localPrefix = isLast ? '└─' : '├─';
@@ -325,7 +325,7 @@ function getVertices(mesh) {
         var mesh_name = mesh.name.substring(0, mesh.name.indexOf('_'))
         let geometry = new THREE.BufferGeometry().setFromPoints(points);
         let attributes = geometry.attributes;
-        console.log(attributes);
+        //console.log(attributes);
         const loader = new THREE.TextureLoader();
         const texture = loader.load('resources/disc.png');
         const pointsMaterial = new THREE.PointsMaterial({
