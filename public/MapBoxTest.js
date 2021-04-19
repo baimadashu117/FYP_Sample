@@ -68,7 +68,7 @@ const aparams = {
 //create legend
 const legendsContenter = document.querySelector('#legends');
 legend = document.createElement('img')
-legend.src = 'resources/legend/depth_legend.png';
+legend.src = 'resources/legend/JinjiHu/depth_legend.png';
 legend.alt = 'Depth Legend';
 legend.width = 150;
 legend.height = 400;
@@ -178,6 +178,7 @@ class CustomLayer {
                 //console.log(mesh_group);
                 // depth mesh
                 depth = root.getObjectByName('depth_TIN');
+                console.log(depth);
                 for (var i in mesh_group) {
                     var mesh = mesh_group[i];
                     //mesh.scale.set(0.1, 0.1, 0.1);
@@ -224,7 +225,8 @@ class CustomLayer {
                             // console.log(intersect[0].index);
                             labelV = intersect[0].point;
                             labelV.project(this.camera);
-                            labelEle.textContent = aparams[i].mesh.name + ': ' + aparams[i].mesh_attribute.position.array[3 * intersectIndex + 1];
+                            var labelInfo = aparams[i].mesh_attribute.position.array[3 * intersectIndex + 1].toString();
+                            labelEle.textContent = aparams[i].mesh.name + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
                             // console.log('Depth: '+depth_attribute.position.array[3 * intersectIndex + 1]);
                             const x = (labelV.x * .5 + .5) * this.canvas.clientWidth;
                             const y = (labelV.y * -.5 + .5) * this.canvas.clientHeight;
@@ -362,37 +364,37 @@ function initGUI() {
     depth_con.listen();
     depth_con.onChange(function () {
         helper(aparams['depth'].mesh.name, 'depth');
-        legend.src = 'resources/legend/depth_legend.png';
+        legend.src = 'resources/legend/JinjiHu/depth_legend.png';
     });
     let temp_con = folder1.add(aparams['temp'], 'temp')
     temp_con.listen();
     temp_con.onChange(function () {
         helper(aparams['temp'].mesh.name, 'temp');
-        legend.src = 'resources/legend/temp_legend.png';
+        legend.src = 'resources/legend/JinjiHu/temp_legend.png';
     });
     let chlro_con = folder1.add(aparams['chlorophyll'], 'chlorophyll')
     chlro_con.listen();
     chlro_con.onChange(function () {
         helper(aparams['chlorophyll'].mesh.name, 'chlorophyll');
-        legend.src = 'resources/legend/chlro_legend.png';
+        legend.src = 'resources/legend/JinjiHu/chlro_legend.png';
     });
     let salinity_con = folder1.add(aparams['salinity'], 'salinity');
     salinity_con.listen();
     salinity_con.onChange(function () {
         helper(aparams['salinity'].mesh.name, 'salinity');
-        legend.src = 'resources/legend/salinity_legend.png';
+        legend.src = 'resources/legend/JinjiHu/salinity_legend.png';
     })
     let conduct_con = folder1.add(aparams['conductivity'], 'conductivity');
     conduct_con.listen()
     conduct_con.onChange(function () {
         helper(aparams['conductivity'].mesh.name, 'conductivity');
-        legend.src = 'resources/legend/conduct_legend.png';
+        legend.src = 'resources/legend/JinjiHu/conduct_legend.png';
     })
     let PH_con = folder1.add(aparams['PH'], 'PH');
     PH_con.listen()
     PH_con.onChange(function () {
         helper(aparams['PH'].mesh.name, 'PH');
-        legend.src = 'resources/legend/ph_legend.png';
+        legend.src = 'resources/legend/JinjiHu/ph_legend.png';
     })
 
     function helper(name, attribute) {
