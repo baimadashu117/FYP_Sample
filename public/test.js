@@ -25,21 +25,10 @@ let labelEle;
 let labelV = new THREE.Vector3();
 //
 let loaded = false;
+//controllers
+const controllers = [];
 
-const aparams = {
-    'depth': {
-        depth: true,
-        mesh: null,
-        mesh_attribute: null,
-        mesh_vertices: null
-    },
-    'algalProtein': {
-        algalProtein: false,
-        mesh: null,
-        mesh_attribute: null,
-        mesh_vertices: null
-    }
-};
+const aparams = {};
 
 //create legend
 const legendsContenter = document.querySelector('#legends');
@@ -125,7 +114,6 @@ class CustomLayer {
         this.raycaster.near = -1;
         this.raycaster.far = 1e6;
 
-        initGUI();
 
         //create label panel
         const labelContenter = document.querySelector('#labels');
@@ -163,12 +151,9 @@ class CustomLayer {
                     getVertices(mesh);
                     //console.log(mesh);
                 }
+                onLoad();
             }
         );
-        console.log(aparams);
-        // console.log(aparams['depth'].mesh.position);
-        // console.log(aparams['depth'].mesh_vertices.position);
-        loaded = true;
         return scene;
     }
 
@@ -242,6 +227,14 @@ map.on('load', function () {
 
 });
 
+function onLoad() {
+    loaded = true;
+    console.log("!!! loaded !!!");
+    console.log(aparams);
+    aparams.depth.depth = true;
+    initGUI();
+}
+
 map.on('mousemove', function (e) {
     customLayer.raycastPoint(e.point);
 });
@@ -275,8 +268,17 @@ function dumpObject(obj, lines = [], isLast = true, prefix = '') {
     const localPrefix = isLast ? '└─' : '├─';
     if (obj.type == 'Mesh') {
         mesh_group.push(obj);
-        // var mesh_name = obj.name.substring(0, obj.name.indexOf('_'));
-        // aparams[mesh_name].mesh = obj;
+        var mesh_name = obj.name.substring(0, obj.name.indexOf('_'));
+        var attribute = {};
+        attribute[mesh_name] = false;
+        attribute['mesh_attribute'] = null;
+        attribute['mesh_vertices'] = null
+        aparams[mesh_name] = attribute;
+        // aparams[mesh_name] = {
+        //     "`translate(-50%, -50%) translate(${x}px,${y}px)`": false,
+        //     mesh_attribute: null,
+        //     mesh_vertices: null
+        // }
     }
     lines.push(`${prefix}${prefix ? localPrefix : ''}${obj.name || '*no-name*'} [${obj.type}]`);
     const newPrefix = prefix + (isLast ? '  ' : '│ ');
@@ -287,7 +289,7 @@ function dumpObject(obj, lines = [], isLast = true, prefix = '') {
     });
     return lines;
 }
-// obj.name.substring(0, obj.name.indexOf('_'))
+
 
 function getVertices(mesh) {
     if (mesh.name != "depth_kriging") {
@@ -333,31 +335,18 @@ function getVertices(mesh) {
 function initGUI() {
     const gui = new GUI();
     var folder1 = gui.addFolder('Change Surface');
-    // for (var i in aparams) {
-    //     console.log(i);
-    //     let button = folder1.add(aparams[i], i);
-    //     button.listen();
-    //     button.onChange(function () {
-    //         helper(aparams[i].mesh.name, i);
-    //     })
-    // }
-    let depth_con = folder1.add(aparams['depth'], 'depth');
-    depth_con.listen();
-    depth_con.onChange(function () {
-        helper(aparams['depth'].mesh.name, 'depth');
-        legend.src = 'resources/legend/DushuHu/depth_legend.png';
-    });
-    let algal_con = folder1.add(aparams['algalProtein'], 'algalProtein')
-    algal_con.listen();
-    algal_con.onChange(function () {
-        helper(aparams['algalProtein'].mesh.name, 'algalProtein');
-        legend.src = 'resources/legend/DushuHu/algalProtein_legend.png';
-    });
+    for (const key in aparams) {
+        var m = aparams[key];
+        let controller = folder1.add(m, key).listen().onChange(function () {
+            console.log(aparams[key].mesh.name, key);
+            helper(aparams[key].mesh.name, key)
+        })
+    }
 
-    function helper(name, attribute) {
-        console.log(name);
+    function helper(mesh_name, attribute) {
+        console.log(mesh_name);
         for (var i in mesh_group) {
-            if (mesh_group[i].name == name) {
+            if (mesh_group[i].name == mesh_name) {
                 mesh_group[i].visible = true;
             } else {
                 mesh_group[i].visible = false;
