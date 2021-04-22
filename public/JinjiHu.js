@@ -351,7 +351,11 @@ function initGUI() {
     for (const key in params) {
         var m = params[key];
         folder1.add(m, key).listen().onChange(function () {
-            helper(key + '_kriging', key)
+            if (key == 'depth') {
+                helper(key + '_TIN', key);
+            } else {
+                helper(key + '_kriging', key)
+            }
             legend.src = `resources/legend/JinjiHu/${key}_legend.png`;
         })
     }
