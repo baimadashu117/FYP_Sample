@@ -1,0 +1,62 @@
+{
+    "jinjihu": {
+        "algalProtein": {
+            "algalProtein": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_vertices": null,
+            "mesh_attributes": null
+        },
+        "depth": {
+            "depth": true,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_vertices": null,
+            "mesh_attributes": null
+        }
+    },
+    "dushuhu": {
+        "depth": {
+            "depth": true,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        },
+        "temprature": {
+            "temprature": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        },
+        "chlorophyll": {
+            "chlorophyll": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        },
+        "salinity": {
+            "salinity": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        },
+        "conductivity": {
+            "conductivity": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        },
+        "PH": {
+            "PH": false,
+            "isLoaded": false,
+            "mesh": null,
+            "mesh_attribute": null,
+            "mesh_vertices": null
+        }
+    }
+}
