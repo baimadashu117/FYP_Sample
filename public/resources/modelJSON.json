@@ -3,6 +3,7 @@
         "algalProtein": {
             "algalProtein": false,
             "isLoaded": false,
+            "unit":"million/liter",
             "mesh": null,
             "mesh_vertices": null,
             "mesh_attributes": null
@@ -10,12 +11,13 @@
         "depth": {
             "depth": true,
             "isLoaded": false,
+            "unit":"meter",
             "mesh": null,
             "mesh_vertices": null,
             "mesh_attributes": null
         }
     },
-    "dushuhu": {
+    "jinjihu_old": {
         "depth": {
             "depth": true,
             "isLoaded": false,
@@ -57,6 +59,24 @@
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
+        }
+    },
+    "dushuhu": {
+        "algalProtein": {
+            "algalProtein": false,
+            "isLoaded": false,
+            "unit":"million/liter",
+            "mesh": null,
+            "mesh_vertices": null,
+            "mesh_attributes": null
+        },
+        "depth": {
+            "depth": true,
+            "isLoaded": false,
+            "unit":"meter",
+            "mesh": null,
+            "mesh_vertices": null,
+            "mesh_attributes": null
         }
     }
 }

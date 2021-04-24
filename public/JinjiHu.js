@@ -210,7 +210,7 @@ class CustomLayer {
                             labelV = intersect[0].point;
                             labelV.project(this.camera);
                             var labelInfo = params[i].mesh_attribute.position.array[3 * intersectIndex + 1].toString();
-                            labelEle.textContent = params[i].mesh.name + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
+                            labelEle.textContent = i+`(${params[i].unit})` + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
                             // console.log('Depth: '+depth_attribute.position.array[3 * intersectIndex + 1]);
                             const x = (labelV.x * .5 + .5) * this.canvas.clientWidth;
                             const y = (labelV.y * -.5 + .5) * this.canvas.clientHeight;
