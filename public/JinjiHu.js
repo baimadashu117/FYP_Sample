@@ -6,7 +6,7 @@ import { GUI } from './jsm/libs/dat.gui.module.js';
 // import {ThreeBox} from './threebox-plugin/dist/threebox.js';
 import { modelJSON } from './modelObjects.js';
 
-const origin = [120.68731, 31.30149921];
+const origin = [120.68801, 31.31549921];
 const { MercatorCoordinate } = mapboxgl;
 
 // scene object
@@ -135,11 +135,11 @@ class CustomLayer {
             'resources/model/JinjiHu/depth.gltf',
             function (gltf) {
                 var root = gltf.scene;
-                root.scale.set(1.0, 0.001, 1.0);
+                root.scale.set(1.0, 0.1, 1.0);
                 console.log(dumpObject(root).join('\n'));
                 // console.log(mesh_group);
                 // depth mesh
-                depth = root.getObjectByName('depth_TIN');
+                depth = root.getObjectByName('depth_kriging');
                 scene.add(depth);
                 // console.log(depth);
                 //mesh.scale.set(0.1, 0.1, 0.1);
@@ -240,15 +240,14 @@ class CustomLayer {
 modelJSON((json) => { init(json); })
 
 function init(json) {
-    params = json['dushuhu'];
+    params = json['jinjihu'];
     customLayer = new CustomLayer('customLayer');
     map.on('load', function () {
         // add full screen control
         // map.addControl(new mapboxgl.FullscreenControl(),"bottom-right");
 
         // add custom 3D layer benethe the draw layer
-        // map.addLayer(customLayer, 'gl-draw-polygon-fill-inactive.cold')
-        map.addLayer(customLayer)
+        map.addLayer(customLayer, 'gl-draw-polygon-fill-inactive.cold')
         initGUI();
 
     });
@@ -286,6 +285,7 @@ function onLoad(modelName) {
     // console.log(params);
     params[modelName][modelName] = true;
     params[modelName].isLoaded = true;
+    console.log(params);
 }
 
 function dumpObject(obj, lines = [], isLast = true, prefix = '') {
@@ -351,11 +351,11 @@ function initGUI() {
     for (const key in params) {
         var m = params[key];
         folder1.add(m, key).listen().onChange(function () {
-            if (key == 'depth') {
-                helper(key + '_TIN', key);
-            } else {
+            // if (key == 'depth') {
+            //     helper(key + '_TIN', key);
+            // } else {
                 helper(key + '_kriging', key)
-            }
+            // }
             legend.src = `resources/legend/JinjiHu/${key}_legend.png`;
         })
     }

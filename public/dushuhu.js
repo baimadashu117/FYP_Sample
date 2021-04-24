@@ -246,8 +246,7 @@ function init(json) {
         // map.addControl(new mapboxgl.FullscreenControl(),"bottom-right");
 
         // add custom 3D layer benethe the draw layer
-        // map.addLayer(customLayer, 'gl-draw-polygon-fill-inactive.cold')
-        map.addLayer(customLayer)
+        map.addLayer(customLayer, 'gl-draw-polygon-fill-inactive.cold')
         initGUI();
 
     });

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>菜鸟教程(runoob.com)</title>
+</head>
+
+<body>
+
+    <p>点击按钮，在等待 3 秒后弹出 "Hello"。</p>
+    <button onclick="myFunction(a)">点我</button>
+
+    <script>
+        function myFunction(callback) {
+            setTimeout(function () { callback() }, 3000);
+        }
+
+        function a() {
+            alert("hello");
+        }
+
+    </script>
+
+</body>
+
+</html>
