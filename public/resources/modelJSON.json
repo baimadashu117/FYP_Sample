@@ -21,6 +21,7 @@
         "depth": {
             "depth": true,
             "isLoaded": false,
+            "unit":"meter",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
@@ -28,6 +29,7 @@
         "temprature": {
             "temprature": false,
             "isLoaded": false,
+            "unit":"°C",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
@@ -35,13 +37,23 @@
         "chlorophyll": {
             "chlorophyll": false,
             "isLoaded": false,
+            "unit":"mg/litre",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
         },
+        "algalProtein": {
+            "algalProtein": false,
+            "isLoaded": false,
+            "unit":"million/liter",
+            "mesh": null,
+            "mesh_vertices": null,
+            "mesh_attributes": null
+        },
         "salinity": {
             "salinity": false,
             "isLoaded": false,
+            "unit":"mg/litre",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
@@ -49,6 +61,7 @@
         "conductivity": {
             "conductivity": false,
             "isLoaded": false,
+            "unit":"mg/litre",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null
@@ -56,6 +69,7 @@
         "PH": {
             "PH": false,
             "isLoaded": false,
+            "unit":"mg/litre",
             "mesh": null,
             "mesh_attribute": null,
             "mesh_vertices": null

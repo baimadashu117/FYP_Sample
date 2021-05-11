@@ -142,7 +142,7 @@ class CustomLayer {
                 // depth mesh
                 depth = root.getObjectByName('depth_kriging');
                 scene.add(depth);
-                // console.log(depth);
+                console.log(depth);
                 //mesh.scale.set(0.1, 0.1, 0.1);
                 depth.rotation.x = Math.PI;
                 depth.rotation.z = Math.PI;

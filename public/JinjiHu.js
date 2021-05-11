@@ -6,7 +6,8 @@ import { GUI } from './jsm/libs/dat.gui.module.js';
 // import {ThreeBox} from './threebox-plugin/dist/threebox.js';
 import { modelJSON } from './modelObjects.js';
 
-const origin = [120.68801, 31.31549921];
+// const origin = [120.68801, 31.31549921];
+const origin = [120.687108099999997, 31.301892940000001];
 const { MercatorCoordinate } = mapboxgl;
 
 // scene object
@@ -33,7 +34,7 @@ let customLayer;
 //create legend
 const legendsContenter = document.querySelector('#legends');
 legend = document.createElement('img')
-legend.src = 'resources/legend/JinjiHu/depth_legend.png';
+legend.src = 'resources/legend/JinjiHu_old/depth_legend.png';
 legend.alt = 'Depth Legend';
 legend.width = 150;
 legend.height = 400;
@@ -76,7 +77,7 @@ class CustomLayer {
 
     constructor(id) {
         this.id = id;
-        THREE.Object3D.DefaultUp.set(0, 0, 1);
+        // THREE.Object3D.DefaultUp.set(0, 0, 1);
     }
 
     onAdd(map, gl) {
@@ -89,11 +90,13 @@ class CustomLayer {
         const s = this.center.meterInMercatorCoordinateUnits();
 
         const scale = new THREE.Matrix4().makeScale(s, s, -s);
-        const rotation = new THREE.Matrix4().multiplyMatrices(
-            new THREE.Matrix4().makeRotationX(-0.5 * Math.PI),
-            new THREE.Matrix4().makeRotationY(Math.PI));
+        // const rotation = new THREE.Matrix4().multiplyMatrices(
+        //     new THREE.Matrix4().makeRotationX(-0.5 * Math.PI),
+        //     new THREE.Matrix4().makeRotationY(Math.PI));
+        const rotation = new THREE.Matrix4().makeRotationX(-0.5 * Math.PI);
 
         this.cameraTransform = new THREE.Matrix4().multiplyMatrices(scale, rotation).setPosition(x, y, z);
+        // this.cameraTransform = new THREE.Matrix4().makeScale(s, s, -s).setPosition(x, y, z);
 
         this.map = map;
         this.makeScene();
@@ -132,19 +135,19 @@ class CustomLayer {
         // use the three.js GLTF loader to add the 3D model to the three.js scene
         var loader = new GLTFLoader();
         loader.load(
-            'resources/model/JinjiHu/depth.gltf',
+            'resources/model/JinjiHu_old/depth.gltf',
             function (gltf) {
                 var root = gltf.scene;
-                root.scale.set(1.0, 0.1, 1.0);
                 console.log(dumpObject(root).join('\n'));
                 // console.log(mesh_group);
-                // depth mesh
-                depth = root.getObjectByName('depth_kriging');
+                // depth = root.getObjectByName('depth_kriging');
+                depth = root.getObjectByName('depth_TIN');
+                // depth.material.wireframe = true;
+                // const axesHelper = new THREE.AxesHelper(500);
+                // scene.add(axesHelper);
+                depth.scale.set(0.9, 0.1, 0.9);
                 scene.add(depth);
-                // console.log(depth);
-                //mesh.scale.set(0.1, 0.1, 0.1);
-                depth.rotation.x = Math.PI;
-                depth.rotation.z = Math.PI;
+                console.log(depth);
                 getVertices(depth);
                 //console.log(mesh);
                 onLoad("depth");
@@ -159,15 +162,13 @@ class CustomLayer {
             var loader = new GLTFLoader();
             var scene = this.scene;
             loader.load(
-                `resources/model/JinjiHu/${modelName}.gltf`,
+                `resources/model/JinjiHu_old/${modelName}.gltf`,
                 function (gltf) {
                     var root = gltf.scene;
-                    root.scale.set(1.0, 0.001, 1.0);
                     console.log(dumpObject(root).join('\n'));
                     var mesh = root.getObjectByName(modelName + '_kriging');
+                    mesh.scale.set(0.9, 0.1, 0.9);
                     scene.add(mesh);
-                    mesh.rotation.x = Math.PI;
-                    mesh.rotation.z = Math.PI;
                     getVertices(mesh);
                     onLoad(modelName);
                 }
@@ -178,9 +179,9 @@ class CustomLayer {
     }
 
 
-    raycastPoint(point) {
+    raycastPoint(point, toRaycast) {
         var mouse = new THREE.Vector2();
-        if (loaded) {
+        if (params[toRaycast].isLoaded == true) {
             // scale mouse pixel position to a percentage of the screen's width and height
             mouse.x = (point.x / this.map.transform.width) * 2 - 1;
             mouse.y = 1 - (point.y / this.map.transform.height) * 2;
@@ -189,39 +190,33 @@ class CustomLayer {
 
             const camInverseProjection = new THREE.Matrix4().copy(this.camera.projectionMatrix).invert();
 
-            // console.log(cameraPosition);
-
             const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
             const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
             const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
 
             this.raycaster.set(cameraPosition, viewDirection);
-            for (var i in params) {
-                if (params[i][i] == true) {
-                    // console.log("raycasting " + aparams[i].mesh.name);
-                    const intersect = this.raycaster.intersectObject(params[i].mesh_vertices);
-                    // console.log(intersect);
-                    if (intersect.length > 0) {
-                        labelEle.style.display = '';
-                        if (intersectIndex != intersect[0].index) {
-                            intersectIndex = intersect[0].index;
-                            // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
-                            // console.log(intersect[0].index);
-                            labelV = intersect[0].point;
-                            labelV.project(this.camera);
-                            var labelInfo = params[i].mesh_attribute.position.array[3 * intersectIndex + 1].toString();
-                            labelEle.textContent = i+`(${params[i].unit})` + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
-                            // console.log('Depth: '+depth_attribute.position.array[3 * intersectIndex + 1]);
-                            const x = (labelV.x * .5 + .5) * this.canvas.clientWidth;
-                            const y = (labelV.y * -.5 + .5) * this.canvas.clientHeight;
-                            labelEle.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
-                        } else if (intersectIndex !== null) {
-                            intersectIndex = null;
-                        }
-                    } else {
-                        labelEle.style.display = 'None';
-                    }
+            // console.log("raycasting " + aparams[i].mesh.name);
+            const intersect = this.raycaster.intersectObject(params[toRaycast].mesh_vertices);
+            // console.log(intersect);
+            if (intersect.length > 0) {
+                labelEle.style.display = '';
+                if (intersectIndex != intersect[0].index) {
+                    intersectIndex = intersect[0].index;
+                    // console.log(depth_attribute.position.array[3 * intersected] + "," + depth_attribute.position.array[3 * intersected + 1] + ',' + attributes.position.array[3 * intersected + 2]);
+                    // console.log(intersect[0].index);
+                    labelV = intersect[0].point;
+                    labelV.project(this.camera);
+                    var labelInfo = params[toRaycast].mesh_attribute.position.array[3 * intersectIndex + 1].toString();
+                    labelEle.textContent = toRaycast + `(${params[toRaycast].unit})` + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
+                    // console.log('Depth: '+depth_attribute.position.array[3 * intersectIndex + 1]);
+                    const x = (labelV.x * .5 + .5) * this.canvas.clientWidth;
+                    const y = (labelV.y * -.5 + .5) * this.canvas.clientHeight;
+                    labelEle.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+                } else if (intersectIndex !== null) {
+                    intersectIndex = null;
                 }
+            } else {
+                labelEle.style.display = 'None';
             }
         }
     }
@@ -240,7 +235,7 @@ class CustomLayer {
 modelJSON((json) => { init(json); })
 
 function init(json) {
-    params = json['jinjihu'];
+    params = json['jinjihu_old'];
     customLayer = new CustomLayer('customLayer');
     map.on('load', function () {
         // add full screen control
@@ -252,7 +247,16 @@ function init(json) {
 
     });
     map.on('mousemove', function (e) {
-        customLayer.raycastPoint(e.point);
+        // console.log(e);
+        var toRaycast;
+        for (var i in params) {
+            if (params[i][i] == true) {
+                toRaycast = i;
+            }
+        }
+        if (toRaycast != null) {
+            customLayer.raycastPoint(e.point, toRaycast);
+        }
     });
     map.on("draw.selectionchange", function (e) {
         var selectFeatures = e.features;
@@ -280,7 +284,6 @@ function init(json) {
 }
 
 function onLoad(modelName) {
-    loaded = true;
     console.log(modelName + " loaded");
     // console.log(params);
     params[modelName][modelName] = true;
@@ -311,7 +314,7 @@ function getVertices(mesh) {
     const vertices = mesh.geometry.attributes.position.array;
     // console.log(vertices);
     let points = [];
-    for (var i = 1; i < vertices.length / 3; i++) {
+    for (var i = 0; i < vertices.length / 3; i++) {
         points.push(new THREE.Vector3().fromArray(vertices, i * 3));
     }
     // console.log(mesh.name);
@@ -334,9 +337,7 @@ function getVertices(mesh) {
         let vertices = new THREE.Points(geometry, pointsMaterial);
         vertices.name = mesh_name + '_vertices';
         // vertices.position.copy(depth.position);
-        vertices.scale.set(1.0, 0.001, 1.0);
-        vertices.rotation.x = Math.PI;
-        vertices.rotation.z = Math.PI;
+        vertices.scale.set(0.9, 0.001, 0.9);
         customLayer.scene.add(vertices);
         params[mesh_name].mesh = mesh;
         params[mesh_name].mesh_attribute = attributes;
@@ -351,12 +352,12 @@ function initGUI() {
     for (const key in params) {
         var m = params[key];
         folder1.add(m, key).listen().onChange(function () {
-            // if (key == 'depth') {
-            //     helper(key + '_TIN', key);
-            // } else {
+            if (key == 'depth') {
+                helper(key + '_TIN', key);
+            } else {
                 helper(key + '_kriging', key)
-            // }
-            legend.src = `resources/legend/JinjiHu/${key}_legend.png`;
+            }
+            legend.src = `resources/legend/JinjiHu_old/${key}_legend.png`;
         })
     }
 
