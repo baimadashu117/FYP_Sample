@@ -186,13 +186,16 @@ class CustomLayer {
             mouse.x = (point.x / this.map.transform.width) * 2 - 1;
             mouse.y = 1 - (point.y / this.map.transform.height) * 2;
 
-            // console.log(this.camera.projectionMatrix);
+            const NDC = new THREE.Vector3(mouse.x, mouse.y, 1);
+            // console.log(NDC.x + " " + NDC.y + " " + NDC.z);
 
             const camInverseProjection = new THREE.Matrix4().copy(this.camera.projectionMatrix).invert();
 
             const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
-            const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
+            const mousePosition = NDC.applyMatrix4(camInverseProjection);
+            // console.log("mousePosition: " + mousePosition.x + " "+ mousePosition.y+" "+mousePosition.z);
             const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
+            // console.log("viewDirection: " + viewDirection.x + " "+viewDirection.y+" "+viewDirection.z);
 
             this.raycaster.set(cameraPosition, viewDirection);
             // console.log("raycasting " + aparams[i].mesh.name);
@@ -337,7 +340,7 @@ function getVertices(mesh) {
         let vertices = new THREE.Points(geometry, pointsMaterial);
         vertices.name = mesh_name + '_vertices';
         // vertices.position.copy(depth.position);
-        vertices.scale.set(0.9, 0.001, 0.9);
+        vertices.scale.set(mesh.scale.x, mesh.scale.y, mesh.scale.z);
         customLayer.scene.add(vertices);
         params[mesh_name].mesh = mesh;
         params[mesh_name].mesh_attribute = attributes;

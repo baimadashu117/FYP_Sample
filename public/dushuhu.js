@@ -90,11 +90,13 @@ class CustomLayer {
         const s = this.center.meterInMercatorCoordinateUnits();
 
         const scale = new THREE.Matrix4().makeScale(s, s, -s);
-        const rotation = new THREE.Matrix4().multiplyMatrices(
-            new THREE.Matrix4().makeRotationX(-0.5 * Math.PI),
-            new THREE.Matrix4().makeRotationY(Math.PI));
+        // const rotation = new THREE.Matrix4().multiplyMatrices(
+        //     new THREE.Matrix4().makeRotationX(-0.5 * Math.PI),
+        //     new THREE.Matrix4().makeRotationY(Math.PI));
+        const rotation = new THREE.Matrix4().makeRotationX(-0.5 * Math.PI);
 
         this.cameraTransform = new THREE.Matrix4().multiplyMatrices(scale, rotation).setPosition(x, y, z);
+
 
         this.map = map;
         this.makeScene();
@@ -136,14 +138,13 @@ class CustomLayer {
             'resources/model/DushuHu/depth.gltf',
             function (gltf) {
                 var root = gltf.scene;
-                root.scale.set(1.0, 0.001, 1.0);
                 console.log(dumpObject(root).join('\n'));
                 // console.log(mesh_group);
                 // depth mesh
                 depth = root.getObjectByName('depth_kriging');
                 scene.add(depth);
                 console.log(depth);
-                //mesh.scale.set(0.1, 0.1, 0.1);
+                depth.scale.set(1.0, 10.0, 1.0);
                 depth.rotation.x = Math.PI;
                 depth.rotation.z = Math.PI;
                 getVertices(depth);
@@ -210,7 +211,7 @@ class CustomLayer {
                             labelV = intersect[0].point;
                             labelV.project(this.camera);
                             var labelInfo = params[i].mesh_attribute.position.array[3 * intersectIndex + 1].toString();
-                            labelEle.textContent = i+`(${params[i].unit})` + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
+                            labelEle.textContent = i + `(${params[i].unit})` + ': ' + labelInfo.substring(0, labelInfo.indexOf('.') + 4);
                             // console.log('Depth: '+depth_attribute.position.array[3 * intersectIndex + 1]);
                             const x = (labelV.x * .5 + .5) * this.canvas.clientWidth;
                             const y = (labelV.y * -.5 + .5) * this.canvas.clientHeight;
@@ -333,7 +334,8 @@ function getVertices(mesh) {
         let vertices = new THREE.Points(geometry, pointsMaterial);
         vertices.name = mesh_name + '_vertices';
         // vertices.position.copy(depth.position);
-        vertices.scale.set(1.0, 0.001, 1.0);
+
+        vertices.scale.set(mesh.scale.x, mesh.scale.y, mesh.scale.z);
         vertices.rotation.x = Math.PI;
         vertices.rotation.z = Math.PI;
         customLayer.scene.add(vertices);

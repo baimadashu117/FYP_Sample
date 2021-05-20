@@ -12,8 +12,8 @@ let plot = (callback) => {
     for (var i = 0; i < data[0].length; i++) {
       indexMap[data[0][i]] = i;
     }
-    console.log(data);
-    console.log(indexMap);
+    // console.log(data);
+    // console.log(indexMap);
     callback(draw);
   })
 
@@ -22,12 +22,30 @@ let plot = (callback) => {
     console.log(category);
     var temp = []
     for (var i = 1; i < a.length - 1; i++) {
-      temp[i] = a[i][indexMap[category]];
+      temp[i] = parseFloat(a[i][indexMap[category]]);
     }
     console.log(temp);
+    var max = temp[1];
+    var min = temp[1];
+    for (let i = 0; i < temp.length; i++) {
+      if (temp[i] > max) {
+        max = temp[i];
+      }
+      if (temp[i] < min) {
+        min = temp[i];
+      }
+    }
+    console.log(max + " " + min);
+    var bin_size = (max-min)/10;
     var trace = {
       x: temp,
       type: 'histogram',
+      autobinx: false,
+      xbins: {
+        start: min,
+        size: bin_size,
+        end: max
+      }
     };
     var layout = {
       xaxis: { title: "Value" },

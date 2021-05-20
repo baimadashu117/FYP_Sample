@@ -37,24 +37,17 @@ plot((draw) => {
         draw('chlorophyll');
     }
 
-    let conductivity = document.querySelector('#conductivity');
-    conductivity.onclick = function () { showConductivity() };
-
-    function showConductivity() {
-        draw('conductivity');
-    }
-
-    let salinity = document.querySelector('#salinity');
-    salinity.onclick = function () { showSalinity() };
-
-    function showSalinity() {
-        draw('salinity');
-    }
-
     let temperature = document.querySelector('#temperature');
     temperature.onclick = function () { showTemperature() };
 
     function showTemperature() {
         draw('temperature');
+    }
+
+    let algalProtein = document.querySelector('#algalProtein');
+    algalProtein.onclick = function () { showAlgalProtein() };
+
+    function showAlgalProtein() {
+        draw('algal_protein');
     }
 })
